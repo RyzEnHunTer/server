@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 import os
 import pytz
 
+IST = pytz.timezone('Asia/Kolkata')
 # MongoDB Configuration
 MONGO_URI = os.getenv("MONGO_URI", "mongodb+srv://ryzen_hunter:Ryzhunteryt098%24%40@hunterbot.beaj4bf.mongodb.net/hunter_bot?retryWrites=true&w=majority&appName=hunterbot")
 client = MongoClient(MONGO_URI)
@@ -37,16 +38,16 @@ def verify_license(req: VerifyRequest):
         
     # Bind device if not bound
     if not license.get("device_id"):
-        licenses.update_one({"key": req.license_key}, {"$set": {"device_id": req.device_id, "activated_at": datetime.now(pytz.utc)}})
+        licenses.update_one({"key": req.license_key}, {"$set": {"device_id": req.device_id, "activated_at": datetime.now(IST)}})
         
     # Check expiry
     expiry = license.get("expires_at")
     if expiry:
         # Ensure expiry is timezone aware for comparison
         if expiry.tzinfo is None:
-            expiry = pytz.utc.localize(expiry)
+            expiry = IST.localize(expiry)
             
-        if datetime.now(pytz.utc) > expiry:
+        if datetime.now(IST) > expiry:
             return {"valid": False, "reason": f"License expired on {expiry.strftime('%Y-%m-%d %H:%M')}"}
             
     nickname = license.get("nickname", "Premium User")
